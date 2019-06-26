@@ -1,0 +1,53 @@
+MANGO_DIR=$(MANGO_ROOT)
+NPU_DIR=$(MANGO_DIR)/usr/local/llvm-npu
+COMPILER_DIR=$(NPU_DIR)/bin
+LIBRARIES_DIR=$(NPU_DIR)/libs-npu
+MISC_DIR=$(NPU_DIR)/misc-npu
+OBJ_DIR=obj
+
+CC=$(COMPILER_DIR)/clang
+CXX=$(COMPILER_DIR)/clang++ -std=c++11
+LLC=$(COMPILER_DIR)/llc
+LD=$(COMPILER_DIR)/ld.lld
+AR=$(COMPILER_DIR)/llvm-ar
+AS=$(COMPILER_DIR)/clang
+OBJDUMP=$(COMPILER_DIR)/llvm-objdump
+LLVMDIS=$(COMPILER_DIR)/llvm-dis
+ELF2HEX=$(COMPILER_DIR)/elf2hex
+
+CFLAGS=-O3 --target=naplespu -I$(LIBRARIES_DIR)/libc/include -I$(MANGO_DIR)/include/libmango -I$(MANGO_DIR)/include/libmango/dev -I$(MANGO_DIR)/include/libhn -I$(KERNEL_INCLUDE_DIR) -Wall -W -DNPU_ACCELERATOR 
+LDFLAGS=-L$(LIBRARIES_DIR)/ -L$(MANGO_DIR)/lib/
+AFLAGS=$(LIBRARIES_DIR)/libcompiler/libcompiler.a $(LIBRARIES_DIR)/libc/libc.a $(LIBRARIES_DIR)/isr/isr.a $(MANGO_DIR)/lib/libmango-dev-npu.a --script=$(MISC_DIR)/lnkrscrpt.npu
+define SRCS_TO_OBJS
+	$(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(foreach file, $(SRCS), $(basename $(notdir $(file))))))
+endef
+
+define SRCS_TO_DEPS
+	$(addprefix $(OBJ_DIR)/, $(addsuffix .d, $(foreach file, $(filter-out %.s, $(SRCS)), $(basename $(notdir $(file))))))
+endef
+
+$(OBJ_DIR)/%.o: %.cpp
+	@echo "Compiling $<"
+	@$(CXX) $(CFLAGS) -o $@ -c $< 
+
+$(OBJ_DIR)/%.o: %.c
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/%.o: %.cl
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/%.o: %.s
+	@echo "Assembling $<"
+	@$(AS) --target=naplespu -o $@ -c $<
+
+$(OBJ_DIR)/%.d: %.cpp
+	@echo "Building dependencies for $<"
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -o $(OBJ_DIR)/$*.d -M -MT $(OBJ_DIR)/$(notdir $(basename $<)).o $<
+
+$(OBJ_DIR)/%.d: %.c
+	@echo "Building dependencies for $<"
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) -o $(OBJ_DIR)/$*.d -M -MT $(OBJ_DIR)/$(notdir $(basename $<)).o $<

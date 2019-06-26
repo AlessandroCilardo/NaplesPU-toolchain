@@ -1,0 +1,26 @@
+To build the compiler ensure you have the necesary prerequisites:
+	GCC
+	cmake
+	make
+	flex
+	bison
+	zlib (libzdev)
+
+To build the compiler you must extract the folder NaplesPULLVM in the home directory and then run the script 'setup.sh'.
+
+	./setup.sh -n
+
+You can use the -t parameter to set the number of threads used to build the compiler (default value 4). If for example you want to compile with 2 threads:
+
+	./setup.sh -n -t=2
+
+It is reccomanded to recompile the nu+ libraries before compiling a new kernel. To do so, you must execute in NaplesPULLVM root:
+	./setup.sh -l
+
+To compile with the toolchain, you can use the examples contained in the 'kernel' folder. Basically you must create a new Makefile in the project folder as the ones already provided.
+
+For example to generate the memory image of 'helloworld.cpp', you must first compile it using:
+
+	make
+
+The file named 'helloworld_mem.hex' will be genereated in the same directory as the input file.

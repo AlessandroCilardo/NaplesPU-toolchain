@@ -1,0 +1,91 @@
+[Registration Phase]
+
+CMakeLists.txt:
+	[+] CMAKE_INSTALL_PREFIX
+	[+] LLVM_ALL_TARGETS
+	[+] LLVM_TARGETS_TO_BUILD
+	[+] LLVM_DEFAULT_TARGET_TRIPLE
+
+cmake/config-ix.cmake:
+	[+] LLVM_NATIVE_ARCH
+
+include/llvm/ADT/Triple.h:
+	[+] Added ArchType
+
+include/llvm/IR/:
+	[+] IntrinsicsNuPlus.td
+
+include/llvm/IR/Intrinsics.td:
+	[+] Added < #include "llvm/IR/IntrinsicsNuPlus.td" >
+
+include/llvm/Object/RelocVisitor.h:
+	[+] VisitELF() -> Added case nuplus
+	[+] visitNuPlus()
+
+include/llvm/Object/ELFObjectFile.h:
+	[+] getFileFormatName() -> Added case EM_NUPLUS
+	[+] getArch() -> Added case EM_NUPLUS
+
+include/llvm/BinaryFormat/ELF.h:
+	[+] inclusion of ELFRelocs for NuPlus
+	[+] ELFTypes
+
+include/llvm/BinaryFormat/ELFRelocs:
+	[+] Added NuPlus.def
+
+lib/MC/MCObjectFileInfo.cpp:
+	[+] initELFMCObjectFileInfo() -> added Triple::nuplus
+
+lib/Object/ELF.cpp:
+	[+] getElfRelocationTypeName -> Added Nuplus.def inclusion
+
+lib/ObjectYAML/ELFYAML.cpp:
+	[+] enumeration-> Added ref to NuPlus
+
+lib/Support/Triple.cpp
+	[+] Added Triple Support for Nuplus
+
+
+[Frontend]
+
+tools/clang/include/clang/Basic:
+	[+] Added Builtins definition
+
+tools/clang/include/clang/Basic/TargetBuiltins.h:
+	[+] Added Builtins inclusion
+
+tools/clang/lib/Basic/Targets.cpp:
+	[+] Added NuPlus.h Target Class
+
+tools/clang/lib/Basic/CMakeLists:
+	[+] Added Targets/NuPlus
+
+tools/clang/lib/Basic/Targets:
+	[+] Added NuPlus definitionpwd
+
+tools/clang/lib/CodeGen/CodeGenFunction.h:
+	[+] Definition of EmitNuPlusBuiltinExpr
+
+tools/clang/lib/CodeGen/CGBuiltin.cpp:
+	[+] Added NuPlus Emit<>BuiltinExpr
+
+tools/clang/lib/Driver/CMakeLists.txt:
+	[+]	Added ToolChains/NuPlus.cpp
+
+tools/clang/lib/Driver/Driver.cpp:
+	[+]	Added reference to NuPlus toolchain
+
+tools/clang/lib/Driver/ToolChains/CommonArgs.cpp:
+	[+]	Added NuPlus Triple
+
+tools/clang/lib/Driver/ToolChains/Clang.cpp:
+	[+]	Added NuPlus Support
+
+tools/clang/lib/Driver/ToolChains/NuPlus.h:
+	[+] Added NuPlus Toolchain definition
+
+tools/clang/lib/Driver/ToolChains/NuPlus.cpp:
+	[+] Added NuPlus Toolchain implementation
+
+STD Backend
+
