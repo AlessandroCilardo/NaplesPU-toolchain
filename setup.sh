@@ -142,6 +142,8 @@ fi
     tput setaf 4
 echo -e "Done."
 
+cd $TOP_DIR
+
 if [ "$LIBRARIES" = 1 ]; then
     echo "Building NaplesPU libraries..."
     echo "make clean"

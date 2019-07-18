@@ -15,6 +15,7 @@ You can use the -t parameter to set the number of threads used to build the comp
 	./setup.sh -n -t=2
 
 It is reccomanded to recompile the nu+ libraries before compiling a new kernel. To do so, you must execute in NaplesPULLVM root:
+
 	./setup.sh -l
 
 To compile with the toolchain, you can use the examples contained in the 'kernel' folder. Basically you must create a new Makefile in the project folder as the ones already provided.
