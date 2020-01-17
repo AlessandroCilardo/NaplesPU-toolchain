@@ -148,6 +148,6 @@ if [ "$LIBRARIES" = 1 ]; then
     echo "Building and Installing NaplesPU libraries..."
     cd libs && mkdir -p build && cd build && cmake .. &&  make clean && make && sudo make install && cd ../..
     echo "-- Installing: /usr/local/llvm-npu/misc-npu"
-    sudo cp -rf misc/* /usr/local/llvm-npu/misc-npu
+    sudo rm -rf /usr/local/llvm-npu/misc-npu && sudo mkdir -p /usr/local/llvm-npu/misc-npu && sudo cp -rf misc/* /usr/local/llvm-npu/misc-npu
 fi
     tput sgr0
