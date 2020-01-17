@@ -107,16 +107,16 @@ fi
                 tput setaf 1
                 echo -e "Configuring build in Debug mode..."
                 tput sgr0
-                echo "The Toolchain will be installed in ${MANGO_ROOT}/usr/local/llvm-npu/"
+                echo "The Toolchain will be installed in /usr/local/llvm-npu/"
 
-                cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=${MANGO_ROOT}/usr/local/llvm-npu/ -DCMAKE_BUILD_TYPE=Debug "${COMPILER_PATH}"
+                cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/llvm-npu/ -DCMAKE_BUILD_TYPE=Debug "${COMPILER_PATH}"
             else
                 tput setaf 4
                 echo -e "Configuring build in Release mode..."
                 tput sgr0
-                echo "The Toolchain will be installed in ${MANGO_ROOT}/usr/local/llvm-npu/"
+                echo "The Toolchain will be installed in /usr/local/llvm-npu/"
 
-                cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=${MANGO_ROOT}/usr/local/llvm-npu/ -DCMAKE_BUILD_TYPE=Release "${COMPILER_PATH}"
+                cmake -G Ninja -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/llvm-npu/ -DCMAKE_BUILD_TYPE=Release "${COMPILER_PATH}"
             fi
         else
             echo "cd {$BUILDPATH}"
@@ -145,10 +145,9 @@ echo -e "Done."
 cd $TOP_DIR
 
 if [ "$LIBRARIES" = 1 ]; then
-    echo "Building NaplesPU libraries..."
-    echo "make clean"
-    make clean
-    echo "make"
-    make
+    echo "Building and Installing NaplesPU libraries..."
+    cd libs && mkdir -p build && cd build && cmake .. &&  make clean && make && sudo make install && cd ../..
+    echo "-- Installing: /usr/local/llvm-npu/misc-npu"
+    sudo cp -rf misc/* /usr/local/llvm-npu/misc-npu
 fi
     tput sgr0

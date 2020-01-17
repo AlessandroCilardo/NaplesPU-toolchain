@@ -1,4 +1,4 @@
-BASE_DIR=$(MANGO_ROOT)/usr/local/llvm-npu
+BASE_DIR=/usr/local/llvm-npu
 COMPILER_DIR=$(BASE_DIR)/bin
 OBJ_DIR=obj
 
@@ -17,7 +17,7 @@ DEPS=$(SRCS_TO_DEPS)
 
 CFLAGS=-O3 --target=naplespu -I$(BASE_DIR)/libs-npu/libc/include -Wall -W -DNPU_ACCELERATOR
 LDFLAGS=-L$(BASE_DIR)/libs-npu/
-AFLAGS=$(BASE_DIR)/libs-npu/libcompiler/libcompiler.a $(BASE_DIR)/libs-npu/libc/libc.a $(BASE_DIR)/libs-npu/isr/isr.a --script=$(BASE_DIR)/misc-npu/lnkrscrpt.ld
+AFLAGS=$(BASE_DIR)/libs-npu/libcompiler/libcompiler.a $(BASE_DIR)/libs-npu/libc/libc.a $(BASE_DIR)/libs-npu/isr/isr.a --script=$(BASE_DIR)/misc-npu/linkerscripts/default.ld
 
 define SRCS_TO_OBJS
 	$(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(foreach file, $(SRCS), $(basename $(notdir $(file))))))
@@ -34,6 +34,10 @@ $(OBJ_DIR)/%.o: %.cpp
 
 
 $(OBJ_DIR)/%.o: %.c
+	@echo "Compiling $<"
+	@$(CC) $(CFLAGS) $(KFLAGS) -o $@ -c $<
+
+$(OBJ_DIR)/%.o: %.cl
 	@echo "Compiling $<"
 	@$(CC) $(CFLAGS) $(KFLAGS) -o $@ -c $<
 

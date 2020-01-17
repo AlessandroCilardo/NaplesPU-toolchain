@@ -51,14 +51,14 @@ _start:
                     read_cr s1, s1        # get my tile ID (i)
                     read_cr s2, s2        # get my thread ID (j)
 
-		    leah  s0, stacks_base
-		    leal  s0, stacks_base
-
 		    # Load constants from linker script
 		    leah s4, stacks_dim
 		    leal s4, stacks_dim
 		    leah s5, threads_per_core
 		    leal s5, threads_per_core
+		    
+			leah  s0, stacks_base
+		    leal  s0, stacks_base
 
 		    # Calculate stack top address as stacks_base + ((CID * threads) + TID + 1) * stacks_dim
 		    mull_i32 s3, s1, s5
@@ -67,13 +67,15 @@ _start:
 		    mull_i32 s3, s3, s4
 		    add_i32 s0, s0, s3
 
-		    move_i32 sp, s0
-                    move_i32 fp, sp
+		    leah sp, stacks_base
+		    leal sp, stacks_base
+		    leah fp, stacks_base
+		    leal fp, stacks_base
 
                     # Only thread 0 does initialization.  Skip for other
                     # threads, which only arrive here after thread 0 has
                     # completed initialization and started them).
-                    bnez s2, do_main
+            bnez s2, do_main
 		    bnez s1, preload_scratchpad
 
 		    # only tile 0 thread 0 must init C constructors

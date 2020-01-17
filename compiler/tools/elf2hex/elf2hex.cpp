@@ -26,7 +26,7 @@ InputFilename(cl::Positional, cl::desc("<input ELF file>"), cl::init("a.out"));
 static cl::opt<std::string> OutputFilename("o", cl::desc("Output hex file"),
                                            cl::value_desc("filename"));
 static cl::opt<unsigned int> BaseAddress("b", cl::desc("Base Address"),
-                                           cl::init(0));
+                                           cl::init(0x0));
 
 int main(int argc, const char *argv[]) {
   cl::ParseCommandLineOptions(argc, argv, "elf2hex converter\n");
@@ -127,54 +127,56 @@ int main(int argc, const char *argv[]) {
             ((eheader.e_entry - BaseAddress) & 0xffffff);
 */
   std::string basename = OutputFilename.substr(0, OutputFilename.size() - 4);
-
-  FILE *outputFile = fopen(OutputFilename.c_str(), "wb");
-  if (!outputFile) {
-    errs() << "error opening output file";
-    return 1;
-  }
-  for (unsigned int i = 0; i < mem_size; i++) {
-    fprintf(outputFile, "%02x", memoryImage[i]);
-    if ((i & 3) == 3)
-      fprintf(outputFile, "\n");
-  }
-  fclose(outputFile);
-  
-  FILE *outputFile2 = fopen((basename + "_mem.hex").c_str(), "wb");
-  if (!outputFile2) {
-    errs() << "error opening output file";
-    return 1;
-  }
-  for (unsigned int i = 63; i < mem_size; i+=64) {
-    for (unsigned int j = 0; j < 64; j+=4) {
-	    for (unsigned int k = 0; k < 4; k++) {
-        fprintf(outputFile2, "%02x", memoryImage[i-j-k]);
-	    }
-    }
-	fprintf(outputFile2, "\n");
-  }
-  fclose(outputFile2);
-
-  FILE *outputFile3 = fopen((basename + "_mem_mango.hex").c_str(), "wb");
-  bool zeroline;
-  for (unsigned int i = 0; i < mem_size; i+=64) {
-  zeroline = true;
-    for (unsigned int j = 0; j < 64 && zeroline; j++) {
-      if(memoryImage[i+j] != 0x00)
-        zeroline = false;
-    }
-    if(!zeroline){
-      fprintf(outputFile3, "0x%08x,0x", i);
-      for (unsigned int j = 0; j < 64; j+=4) {
-        for (unsigned int k = 0; k < 4; k++) {
-//  	    fprintf(outputFile3, "%02x", memoryImage[i+j+3-k]);
-          fprintf(outputFile3, "%02x", memoryImage[i+j+k]);
-        }
-      }
-      fprintf(outputFile3, "\n");
-    }
-  }
-  fclose(outputFile3);
+//
+//  FILE *outputFile = fopen(OutputFilename.c_str(), "wb");
+//  if (!outputFile) {
+//    errs() << "error opening output file";
+//    return 1;
+//  }
+//  for (unsigned int i = 0; i < mem_size; i++) {
+//    fprintf(outputFile, "%02x", memoryImage[i]);
+//    if ((i & 3) == 3)
+//      fprintf(outputFile, "\n");
+//  }
+//  fclose(outputFile);
+//  
+//  FILE *outputFile2 = fopen((basename + "_mem.hex").c_str(), "wb");
+//  if (!outputFile2) {
+//    errs() << "error opening output file";
+//    return 1;
+//  }
+//  for (unsigned int i = 63; i < mem_size; i+=64) {
+//    for (unsigned int j = 0; j < 64; j+=4) {
+//	    for (unsigned int k = 0; k < 4; k++) {
+//        fprintf(outputFile2, "%02x", memoryImage[i-j-k]);
+//	    }
+//    }
+//	fprintf(outputFile2, "\n");
+//  }
+//  fclose(outputFile2);
+//
+//  FILE *outputFile3 = fopen((basename + "_mem_mango.hex").c_str(), "wb");
+//  bool zeroline;
+//  for (unsigned int i = 0; i < mem_size; i+=64) {
+//  zeroline = true;
+//    for (unsigned int j = 0; j < 64 && zeroline; j++) {
+//      if(memoryImage[i+j] != 0x00) {
+//        zeroline = false;
+//        break;
+//        }
+//    }
+//    if(!zeroline){
+//      fprintf(outputFile3, "0x%08x,0x", i);
+//      for (unsigned int j = 0; j < 64; j+=4) {
+//        for (unsigned int k = 0; k < 4; k++) {
+////  	    fprintf(outputFile3, "%02x", memoryImage[i+j+3-k]);
+//          fprintf(outputFile3, "%02x", memoryImage[i+j+k]);
+//        }
+//      }
+//      fprintf(outputFile3, "\n");
+//    }
+//  }
+//  fclose(outputFile3);
 
   FILE *outputFile4 = fopen((basename + "_mem_standalone.hex").c_str(), "wb");
   for (int segment = 0; segment < eheader.e_phnum; segment++) {
@@ -183,15 +185,31 @@ int main(int argc, const char *argv[]) {
       unsigned int elf_memsize = pheader[segment].p_memsz;
       // round elf_memsize to the next memory block
       elf_memsize = ((elf_memsize + 63) / 64) * 64;
-      for (unsigned int blocks = 0; blocks < (elf_memsize / 64); blocks++) {
-        unsigned int block_start_addr = seg_start_addr + (blocks * 64);
-        fprintf(outputFile4, "0x%08x,0x", block_start_addr);
+      bool skip = true;
 
-        for (unsigned int byte_off = 0; byte_off < 64; byte_off++) {
-          fprintf(outputFile4, "%02x", memoryImage[block_start_addr + byte_off]);
+      for (unsigned int blocks = 0; blocks < (elf_memsize / 64); blocks++) {
+
+        skip = true;
+
+        unsigned int block_start_addr = seg_start_addr + (blocks * 64);
+
+
+        for (unsigned int byte_off = 0; byte_off < 64 && skip; byte_off++) {
+            if ( memoryImage[block_start_addr + byte_off] != 0x0 ) 
+                skip = false; 
         }
-        fprintf(outputFile4, "\n");
-      }
+
+        if (!skip){
+            fprintf(outputFile4, "0x%08x,0x", block_start_addr);
+
+            for (unsigned int byte_off = 0; byte_off < 64; byte_off++) {
+              fprintf(outputFile4, "%02x", memoryImage[block_start_addr + byte_off]);
+            }
+        
+            fprintf(outputFile4, "\n");
+        
+            } 
+        }
     }
   }
   fclose(outputFile4);
